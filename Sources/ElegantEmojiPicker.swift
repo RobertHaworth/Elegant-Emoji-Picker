@@ -19,8 +19,6 @@ open class ElegantEmojiPicker: UIViewController {
     let padding = 16.0
     let topElementHeight = 40.0
     
-    let backgroundBlur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
-    
     var searchFieldBackground: UIVisualEffectView?
     var searchField: UITextField?
     var clearButton: UIButton?
@@ -86,10 +84,13 @@ open class ElegantEmojiPicker: UIViewController {
         
         self.presentationController?.delegate = self
         
-        self.view.addSubview(backgroundBlur, anchors: LayoutAnchor.fullFrame)
+        if #unavailable(iOS 26.0) { // in iOS 26 they forced opaque white background (in large detent) and liquid glass (in medium detent), so we only need the blur for OS below it
+            self.view.addSubview(UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial)), anchors: LayoutAnchor.fullFrame)
+        }
         
         if config.showSearch {
             searchFieldBackground = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+            searchFieldBackground?.backgroundColor = .systemBackground.withAlphaComponent(0.5)
             searchFieldBackground!.layer.cornerRadius = 8
             searchFieldBackground!.clipsToBounds = true
             searchFieldBackground!.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(TappedSearchBackground)))
