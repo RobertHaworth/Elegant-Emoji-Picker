@@ -38,7 +38,7 @@ class EmojiCell: UICollectionViewCell {
     @objc func LongPress (_ sender: UILongPressGestureRecognizer) {
         guard let emojiPicker = emojiPicker else { return }
 
-        if !emojiPicker.config.supportsSkinTones || !emoji.supportsSkinTones { return }
+        if !emojiPicker.config.supportsSkinTones || !(emoji.supportsSkinTones ?? false) { return }
         
         if sender.state == .began {
             emojiPicker.ShowSkinToneSelector(self)

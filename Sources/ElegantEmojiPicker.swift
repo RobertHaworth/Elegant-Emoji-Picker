@@ -368,7 +368,7 @@ extension ElegantEmojiPicker: UIGestureRecognizerDelegate {
         }
         
         let location = sender.location(in: collectionView)
-        guard let indexPath = collectionView.indexPathForItem(at: location), let cell = collectionView.cellForItem(at: indexPath) as? EmojiCell, !(sender.state == .began && cell.emoji.supportsSkinTones && config.supportsSkinTones) else  {  return }
+        guard let indexPath = collectionView.indexPathForItem(at: location), let cell = collectionView.cellForItem(at: indexPath) as? EmojiCell, !(sender.state == .began && cell.emoji.supportsSkinTones ?? false && config.supportsSkinTones) else  {  return }
                 
         if sender.state == .began {
             ShowEmojiPreview(emoji: cell.emoji)
@@ -514,7 +514,7 @@ extension ElegantEmojiPicker {
     /// - Returns: Array of all emojis.
     static public func getAllEmoji () -> [Emoji] {
         let emojiData = (try? Data(contentsOf: Bundle.module.url(forResource: "Emoji Unicode 16.0", withExtension: "json")!))!
-        return try! JSONDecoder().decode([Emoji].self, from: emojiData)
+        return (try? JSONDecoder().decode([Emoji].self, from: emojiData)) ?? []
     }
     
     /// Returns an array of all available emojis categorized by section.
@@ -527,7 +527,7 @@ extension ElegantEmojiPicker {
         
         let persistedSkinTones = ElegantEmojiPicker.persistedSkinTones
         emojis = emojis.map({
-            if !$0.supportsSkinTones { return $0 }
+            if !($0.supportsSkinTones ?? false) { return $0 }
             
             if let persistedSkinToneStr = persistedSkinTones[$0.description], let persistedSkinTone = EmojiSkinTone(rawValue: persistedSkinToneStr) {
                 return $0.duplicate(persistedSkinTone)

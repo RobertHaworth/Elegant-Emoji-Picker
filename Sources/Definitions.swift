@@ -10,13 +10,13 @@ import UIKit
 import CoreText
 
 /// Struct representing a single emoji
-public struct Emoji: Decodable, Equatable {
+public struct Emoji: Codable, Equatable {
     public let emoji: String
     public let description: String
     public let category: EmojiCategory
     public let aliases: [String]
     public let tags: [String]
-    public let supportsSkinTones: Bool
+    public let supportsSkinTones: Bool?
     public let iOSVersion: String
     
     /// Get a string representation of this emoji with another skin tone
@@ -25,7 +25,7 @@ public struct Emoji: Decodable, Equatable {
     public func emoji (_ withSkinTone: EmojiSkinTone?) -> String? {
         // Applying skin tones with Dan Wood's code: https://github.com/Remotionco/Emoji-Library-and-Utilities
         
-        if !supportsSkinTones { return nil }
+        if !(supportsSkinTones ?? false) { return nil }
         // If skin tone is nil, return the default yellow emoji
         guard let withSkinTone = withSkinTone else {
             if let unicode = emoji.unicodeScalars.first { return String(unicode) }
@@ -64,25 +64,14 @@ public struct Emoji: Decodable, Equatable {
         return string
     }
     
-    enum CodingKeys: CodingKey {
+    enum CodingKeys: String, CodingKey {
         case emoji
         case description
         case category
         case aliases
         case tags
-        case skin_tones
-        case ios_version
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.emoji = try container.decode(String.self, forKey: .emoji)
-        self.description = try container.decode(String.self, forKey: .description)
-        self.category = try container.decode(EmojiCategory.self, forKey: .category)
-        self.aliases = try container.decode([String].self, forKey: .aliases)
-        self.tags = try container.decode([String].self, forKey: .tags)
-        self.supportsSkinTones = try container.decodeIfPresent(Bool.self, forKey: .skin_tones) ?? false
-        self.iOSVersion = try container.decode(String.self, forKey: .ios_version)
+        case supportsSkinTones = "skin_tones"
+        case iOSVersion = "ios_version"
     }
     
     /// Create an instance of an emoji
@@ -108,7 +97,7 @@ public struct Emoji: Decodable, Equatable {
     /// - Parameter withSkinTone: new skin tone to use. If nil, creates a standard yellow emoji
     /// - Returns: new Emoji with the applied skin tone
     public func duplicate (_ withSkinTone: EmojiSkinTone?) -> Emoji {
-        return Emoji(emoji: self.emoji(withSkinTone) ?? emoji, description: description, category: category, aliases: aliases, tags: tags, supportsSkinTones: supportsSkinTones, iOSVersion: iOSVersion)
+        return Emoji(emoji: self.emoji(withSkinTone) ?? emoji, description: description, category: category, aliases: aliases, tags: tags, supportsSkinTones: supportsSkinTones ?? false, iOSVersion: iOSVersion)
     }
 }
 
@@ -138,7 +127,7 @@ public enum EmojiSkinTone: String, CaseIterable {
     case Dark = "🏿"
 }
 
-public enum EmojiCategory: String, CaseIterable, Decodable {
+public enum EmojiCategory: String, CaseIterable, Codable {
     case SmileysAndEmotion = "Smileys & Emotion"
     case PeopleAndBody = "People & Body"
     case AnimalsAndNature = "Animals & Nature"
